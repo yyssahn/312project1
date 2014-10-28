@@ -1,5 +1,6 @@
 
 testBoard = ["WWW-WW-------BB-BBB"]
+testBoardState =["WWW","-WW-", "-----","-BB-","BBB"]
 type Pawn = (Char,Int,Int)
 crusher_r4j8 ::[String]->Char->Int->Int->[[String]]
 crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 [state] team numMove numN)
@@ -8,6 +9,34 @@ crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 [state] team nu
 state_search_r4j8 ::[[String]] ->Char->Int->Int->[[String]]
 state_search_r4j8 path team numMove numN  = path
 
+make_board :: [Char]->Int->Int->[String]
+make_board input n helper
+	|	null input = []
+	|	helper == n = make_board_helper input n (helper -2)
+	|	otherwise = (first_n_items input (n + helper)):make_board (mynthtail (n+helper) input) n (helper+1)
+
+
+first_n_items ::[Char]->Int->[Char]
+first_n_items [] n = []
+first_n_items (x:xs) 0 = []
+first_n_items (x:xs) n = x : (first_n_items xs (n-1))
+ 
+make_PawnList:: [String]->Int->[Pawn]
+make_PawnList state yhelper
+	| null state = []
+	| otherwise = (make_PawnList_helper (head state) 0 yhelper) ++ (make_PawnList (tail state) (yhelper +1))
+
+
+make_PawnList_helper :: [Char]->Int->Int->[Pawn]
+make_PawnList_helper str helper y
+	|	null str = []
+	|	head str /= '-'  = ((head str),helper,y) : make_PawnList_helper (tail str) (helper+1) y  	
+	| 	otherwise = make_PawnList_helper (tail str) (helper + 1) y
+
+make_board_helper ::[Char]->Int->Int->[String]
+make_board_helper input n helper
+	|	helper == 0 = (first_n_items input n ):[]
+	|	otherwise =  (first_n_items input (n + helper)): make_board_helper (mynthtail (n+helper) input)  n (helper-1)
 
 get_Char :: [String]->Int->Int->Char
 get_Char state x y
