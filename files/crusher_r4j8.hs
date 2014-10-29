@@ -7,6 +7,7 @@ type Pawn = (Char,Int,Int)
 testPawn = ('W',0,0)
 testPawnList = [('W',0,0),('W',0,1),('W',0,2),('W',1,1),('W',1,2),('B',3,1),('B',3,2),('B',4,0),('4',4,1),('B',4,2)]
 
+testBoardState2 = ["-W---","--W---","---W---","--------","---------"]
 
 topleft::Int
 topleft = 0
@@ -47,6 +48,11 @@ make_board input n helper
 	|	helper == n = make_board_helper input n (helper -2)
 	|	otherwise = (first_n_items input (n + helper)):make_board (mynthtail (n+helper) input) n (helper+1)
 
+is_game_over :: [String]->Int->Bool
+is_game_over state n
+	|	get_pawn_count state 'W' < n || get_pawn_count state 'B' < 3 = True
+	|	otherwise = False
+
 
 first_n_items ::[Char]->Int->[Char]
 first_n_items [] n = []
@@ -76,11 +82,13 @@ make_board_helper input n helper
 
 get_Char :: [String]->Int->Int->Char
 get_Char state x y
-	|	null state = 'A'
-	|	y == 0 = get_Char_helper (head state) x
+	|	null state = ' '
+	|	y == 0 && (length (head state)) > x = get_Char_helper (head state) x
+	|	y == 0 && (length (head state)) <= x = ' '
 	|	otherwise = get_Char (tail state) x (y-1)
 
 get_Char_helper::[Char]->Int->Char
+
 get_Char_helper row x = head (mynthtail x row)
 	
 mynthtail:: Int->[a]->[a]
@@ -92,11 +100,48 @@ mynthtail n list1
 
 empty :: [String]->Int->Int->Bool
 empty state x y
+	| null state = False
 	|  x<0 || y < 0	= False
 	|	(get_Char state x y) == '-' =True
 	|	otherwise = False
 
 
+--------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+
+possible_jump::[String]->Pawn->Int->Int->Bool
+possible_jump state pawn size dir	
+	|	get_pawn_y pawn < size-2 = possible_jump_up state pawn dir
+	|	otherwise = False
+
+--	|	get_pawn_y pawn ==(size-2) = possible_jump_centerup state pawn dir
+--	|	get_pawn_y pawn ==(size-1) = possible_jump_center state pawn dir
+--	|	get_pawn_y pawn ==(size) = possible_jump_centerdown state pawn dir
+--	|	get_pawn_y pawn >(size) = possible_jump_down state pawn dir
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+possible_jump_up ::[String]->Pawn->Int->Bool
+possible_jump_up state pawn dir
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -2) (get_pawn_y pawn -2)
+--	|	dir == topright = empty state (get_pawn_x pawn) (get_pawn_y pawn - 1)
+--	|	dir == left = empty state (get_pawn_x pawn - 1) (get_pawn_y pawn)
+--	|	dir == right = empty state (get_pawn_x pawn + 1) (get_pawn_y pawn )
+--	|	dir == bottomleft = empty state (get_pawn_x pawn) (get_pawn_y pawn + 1)
+--	|	dir == bottomright = empty state (get_pawn_x pawn + 1) (get_pawn_y pawn + 1)
+	|	otherwise = False
+
+
+can_jump ::[String]->Char->Int->Int->Bool
+can_jump state pawn x y
+	|	(get_Char state x y) == pawn || (get_Char state x y) == ' ' = False 
+	|	otherwise = True
+--------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+
+	
 possible_move ::[String]->Pawn->Int->Int->Bool
 possible_move state pawn size dir
 	|	get_pawn_y pawn < (size-1) = possible_move_up state pawn dir
