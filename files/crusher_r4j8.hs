@@ -125,11 +125,55 @@ possible_jump state pawn size dir
 possible_jump_up ::[String]->Pawn->Int->Bool
 possible_jump_up state pawn dir
 	|	dir == topleft  && (get_Char state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -2) (get_pawn_y pawn -2)
---	|	dir == topright = empty state (get_pawn_x pawn) (get_pawn_y pawn - 1)
---	|	dir == left = empty state (get_pawn_x pawn - 1) (get_pawn_y pawn)
---	|	dir == right = empty state (get_pawn_x pawn + 1) (get_pawn_y pawn )
---	|	dir == bottomleft = empty state (get_pawn_x pawn) (get_pawn_y pawn + 1)
---	|	dir == bottomright = empty state (get_pawn_x pawn + 1) (get_pawn_y pawn + 1)
+	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
+	|	dir == bottomleft && (get_Char state (get_pawn_x pawn )(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn+2)
+	|	dir == bottomright && (get_Char state (get_pawn_x pawn +1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn+2)
+	|	otherwise = False
+
+
+possible_jump_centerup ::[String]->Pawn->Int->Bool
+possible_jump_centerup state pawn dir
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -2) (get_pawn_y pawn -2)
+	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
+	|	dir == bottomleft && (get_Char state (get_pawn_x pawn )(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 1) (get_pawn_y pawn+2)
+	|	dir == bottomright && (get_Char state (get_pawn_x pawn +1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 1) (get_pawn_y pawn+2)
+	|	otherwise = False
+
+
+possible_jump_center ::[String]->Pawn->Int->Bool
+possible_jump_center state pawn dir
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -2) (get_pawn_y pawn -2)
+	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
+	|	dir == bottomleft && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn+2)
+	|	dir == bottomright && (get_Char state (get_pawn_x pawn)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn+2)
+	|	otherwise = False
+
+
+
+possible_jump_centerdown ::[String]->Pawn->Int->Bool
+possible_jump_centerdown state pawn dir
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -1) (get_pawn_y pawn -2)
+	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn+1) (get_pawn_y pawn - 2)
+	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
+	|	dir == bottomleft && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn+2)
+	|	dir == bottomright && (get_Char state (get_pawn_x pawn)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn+2)
+	|	otherwise = False
+
+possible_jump_down ::[String]->Pawn->Int->Bool
+possible_jump_down state pawn dir
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn-1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn -2)
+	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn+2) (get_pawn_y pawn - 2)
+	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
+	|	dir == bottomleft && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn+2)
+	|	dir == bottomright && (get_Char state (get_pawn_x pawn)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn+2)
 	|	otherwise = False
 
 
@@ -140,6 +184,9 @@ can_jump state pawn x y
 --------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 
 	
 possible_move ::[String]->Pawn->Int->Int->Bool
@@ -177,6 +224,37 @@ possible_move_down state pawn dir
 	|	dir == bottomleft = empty state (get_pawn_x pawn - 1) (get_pawn_y pawn + 1)
 	|	dir == bottomright = empty state (get_pawn_x pawn) (get_pawn_y pawn + 1)
 	
+
+
+------
+----
+-----
+
+move_pawn :: [String]->Pawn->Int->Int->[String]
+move_pawn state pawn x y = move_pos (empty_pos state (get_pawn_x pawn) (get_pawn_y pawn)) (get_pawn_char pawn) x y
+	
+empty_pos :: [String]->Int->Int->[String]
+empty_pos [] x y = []
+empty_pos (x:xs) xpos 0 = (empty_pos_helper x xpos): xs
+empty_pos (x:xs) xpos ypos = x:empty_pos xs xpos (ypos-1)
+
+empty_pos_helper :: [Char]->Int->[Char]
+empty_pos_helper [] x = []
+empty_pos_helper (a:as) 0 = '-':as
+empty_pos_helper (a:as) x = a : empty_pos_helper as (x-1)
+
+
+
+move_pos::[String]->Char->Int->Int->[String]
+move_pos [] pawn x y = []
+move_pos (a:as) pawn x 0 = (move_pos_helper a pawn x): as
+move_pos (a:as) pawn x y = a : move_pos as pawn x (y-1)
+
+move_pos_helper::[Char]->Char->Int->[Char]
+move_pos_helper [] pawn x = []
+move_pos_helper (a:as) pawn 0 = pawn : as
+move_pos_helper (a:as) pawn x = a : move_pos_helper as pawn (x-1)
+
 	
 --
 -- Pawn getters
