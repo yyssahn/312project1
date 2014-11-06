@@ -253,6 +253,63 @@ possible_move_down state pawn dir
 
 
 --jumping pawn 
+jump_pawn :: [String]->Pawn->Int->Int->[String]
+jump_pawn state pawn dir n
+	| 	get_pawn_y (pawn) < (n - 2 )  = jump_pawn_up state pawn dir
+	|	get_pawn_y (pawn) == (n-2) = jump_pawn_centerup state pawn dir
+	|	get_pawn_y (pawn) == (n-1) = jump_pawn_center state pawn dir
+	|	get_pawn_y (pawn) == n = jump_pawn_centerdown state pawn dir
+	|	otherwise = jump_pawn_down state pawn dir
+
+jump_pawn_up :: [String]->Pawn->Int->[String]
+jump_pawn_up state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn - 2)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 2) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 2)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn +2) (get_pawn_y pawn +2)
+
+
+jump_pawn_centerup :: [String]->Pawn->Int->[String]
+jump_pawn_centerup state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn - 2)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 2) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn-1) (get_pawn_y pawn + 2)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +2)
+
+
+jump_pawn_center :: [String]->Pawn->Int->[String]
+jump_pawn_center state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn - 2)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 2) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn -2) (get_pawn_y pawn + 2)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn +2)
+
+
+jump_pawn_centerdown :: [String]->Pawn->Int->[String]
+jump_pawn_centerdown state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 2)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn + 1) (get_pawn_y pawn - 2)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn -  2) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 2) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn + 2)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn +2)
+
+
+jump_pawn_down :: [String]->Pawn->Int->[String]
+jump_pawn_down state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 2)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn+2) (get_pawn_y pawn - 2)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 2) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn-2) (get_pawn_y pawn + 2)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn +2)
+
 
 --moving pawn one space
 slide_pawn :: [String]->Pawn->Int->Int->[String]
