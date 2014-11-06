@@ -2,6 +2,8 @@
 testBoard = ["WWW-WW-------BB-BBB"]
 testBoardState =["WWW","-WW-", "-----","-BB-","BBB"]
 
+testBoardState1 =["WWW","--W-", "-w---","-BB-","BBB"]
+
 type Pawn = (Char,Int,Int)
 
 testPawn = ('W',0,0)
@@ -331,24 +333,23 @@ slide_pawn_up state pawn dir
 
 
 slide_pawn_center:: [String]->Pawn->Int->[String]
-slide_pawn_center state pawn dir
-	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
-	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
-	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
-	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 1) (get_pawn_y pawn)
-	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
-	|	otherwise = move_pawn state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +1)
-
+slide_pawn_center  state pawn dir
+	|	dir == topleft  = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
+	|	dir == topright = move_pawn state pawn  (get_pawn_x pawn) (get_pawn_y pawn - 1)
+	|	dir == left = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn  (get_pawn_x pawn + 1) (get_pawn_y pawn )
+	|	dir == bottomleft = move_pawn state pawn  (get_pawn_x pawn - 1) (get_pawn_y pawn + 1)
+	|	dir == bottomright = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
 
 
 slide_pawn_down:: [String]->Pawn->Int->[String]
 slide_pawn_down state pawn dir
-	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
-	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
-	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
-	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 1) (get_pawn_y pawn)
-	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
-	|	otherwise = move_pawn state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +1)	
+	|	dir == topleft  = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
+	|	dir == topright = move_pawn state pawn (get_pawn_x pawn+1) (get_pawn_y pawn - 1)
+	|	dir == left = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn + 1) (get_pawn_y pawn )
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn + 1)
+	|	dir == bottomright = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
 
 move_pawn :: [String]->Pawn->Int->Int->[String]
 move_pawn state pawn x y = move_pos (empty_pos state (get_pawn_x pawn) (get_pawn_y pawn)) (get_pawn_char pawn) x y
