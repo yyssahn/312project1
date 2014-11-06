@@ -5,7 +5,7 @@ testBoardState =["WWW","-WW-", "-----","-BB-","BBB"]
 type Pawn = (Char,Int,Int)
 
 testPawn = ('W',0,0)
-testPawnList = [('W',0,0),('W',0,1),('W',0,2),('W',1,1),('W',1,2),('B',3,1),('B',3,2),('B',4,0),('4',4,1),('B',4,2)]
+testPawnList = [('W',0,0),('W',1,0),('W',2,0),('W',1,1),('W',2,1),('B',1,3),('B',2,3),('B',0,4),('4',1,4),('B',2,4)]
 
 testBoardState2 = ["-W---","--W---","---W---","--------","---------"]
 
@@ -30,6 +30,29 @@ crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 state team numM
 
 state_search_r4j8 ::[String] ->Char->Int->Int->[String]
 state_search_r4j8 path team numMove numN  = path
+
+get_score :: [String]->Char->Int->Int
+get_score state pawn n
+	|	pawn == 'W' && (get_pawn_count state 'B' < n) = 1000
+	|	pawn == 'W' = (get_pawn_count state 'W') - (get_pawn_count state 'B')
+	|	pawn == 'B' && (get_pawn_count state 'W' < n) = 1000
+	|	otherwise = (get_pawn_count state 'B') - (get_pawn_count state 'W')
+
+
+--generate_possible_state :: [String]->Char->[Pawn]->Int->[String]
+--generate_possible_state state turn pawns n
+--	|	null (head pawns)  = []
+--	|	get_pawn_char (head Pawns) /= turn = generate_possible_state state (tail pawns) n
+--	|	otherwise = (generate_possible_state_helper state (head pawns) n): generate_possible_state state (tail pawns) n
+
+--generate_possible_state_helper ::[String] ->Pawn->Int->[String]
+--	|
+--	|
+
+	
+
+
+
 
 get_pawn_count::[String]->Char->Int
 get_pawn_count state pawn
@@ -113,13 +136,11 @@ empty state x y
 possible_jump::[String]->Pawn->Int->Int->Bool
 possible_jump state pawn size dir	
 	|	get_pawn_y pawn < size-2 = possible_jump_up state pawn dir
+	|	get_pawn_y pawn ==(size-2) = possible_jump_centerup state pawn dir
+	|	get_pawn_y pawn ==(size-1) = possible_jump_center state pawn dir
+	|	get_pawn_y pawn ==(size) = possible_jump_centerdown state pawn dir
+	|	get_pawn_y pawn >(size) = possible_jump_down state pawn dir
 	|	otherwise = False
-
---	|	get_pawn_y pawn ==(size-2) = possible_jump_centerup state pawn dir
---	|	get_pawn_y pawn ==(size-1) = possible_jump_center state pawn dir
---	|	get_pawn_y pawn ==(size) = possible_jump_centerdown state pawn dir
---	|	get_pawn_y pawn >(size) = possible_jump_down state pawn dir
-
 --------------------------------------------------------------------------------------------------------------------------------------
 
 possible_jump_up ::[String]->Pawn->Int->Bool
@@ -229,6 +250,48 @@ possible_move_down state pawn dir
 ------
 ----
 -----
+
+
+--jumping pawn 
+
+--moving pawn one space
+slide_pawn :: [String]->Pawn->Int->Int->[String]
+slide_pawn state pawn dir n 
+	| 	get_pawn_y (pawn) < (n - 1 )  = slide_pawn_up state pawn dir
+	|	get_pawn_y (pawn) == (n-1) = slide_pawn_center state pawn dir
+	|	otherwise = slide_pawn_down state pawn dir
+
+
+slide_pawn_up:: [String]->Pawn->Int->[String]
+slide_pawn_up state pawn dir 
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 1) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +1)
+
+
+
+slide_pawn_center:: [String]->Pawn->Int->[String]
+slide_pawn_center state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 1) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +1)
+
+
+
+slide_pawn_down:: [String]->Pawn->Int->[String]
+slide_pawn_down state pawn dir
+	|	dir == topleft = move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
+	|	dir == topright	=move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
+	|	dir == left	= move_pawn state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn)
+	|	dir == right = move_pawn state pawn (get_pawn_x pawn+ 1) (get_pawn_y pawn)
+	|	dir == bottomleft = move_pawn state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
+	|	otherwise = move_pawn state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +1)	
 
 move_pawn :: [String]->Pawn->Int->Int->[String]
 move_pawn state pawn x y = move_pos (empty_pos state (get_pawn_x pawn) (get_pawn_y pawn)) (get_pawn_char pawn) x y
