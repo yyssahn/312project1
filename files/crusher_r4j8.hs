@@ -11,6 +11,8 @@ testPawnList = [('W',0,0),('W',1,0),('W',2,0),('W',1,1),('W',2,1),('B',1,3),('B'
 
 testBoardState2 = ["-W---","--W---","---W---","--------","---------"]
 
+type PathScore= ([[String]],Int)
+
 topleft::Int
 topleft = 0
 topright::Int
@@ -19,15 +21,46 @@ left::Int
 left = 2
 right::Int
 right = 3
-bottomleft::Int
+bottomleft::Int 
 bottomleft = 4
 bottomright::Int
 bottomright = 5
 
 
 
+
+-------------------------------------------------------------------------------
+generate_path :: [String]->Char->Int->Int->[[[String]]]->[[[String]]]
+generate_path state turn turnnum n path
+	|	turnnum ==0 = path
+	|	(length path)== 0  = generate_path state (nextturn turn) (turnnum-1) n (make_patharray_helper [state] (generate_possible_state state turn (make_PawnList state 0) n))
+	|	otherwise = generate_path state (nextturn turn) (turnnum -1) n (make_patharray path turn n)
+
+
+make_patharray:: [[[String]]]->Char->Int->[[[String]]]
+make_patharray paths turn n 
+	|	null paths = []
+	|	otherwise = (make_patharray_helper (head paths) (generate_possible_state (last(head paths))  turn (make_PawnList (last (head paths)) 0) n ) ) ++ make_patharray (tail paths) turn n
+
+make_patharray_helper :: [[String]]->[[String]]->[[[String]]]
+make_patharray_helper path states
+	|	null states = []
+	|	otherwise = (reverse ( (head states):(reverse path))) : make_patharray_helper path (tail states) 
+-------------------------------------------------------------------------------
+
+
+make_pathscore :: [[[String]]]->Char->Int->[PathScore]
+make_pathscore paths turn n 
+	|	null paths = []
+	|	otherwise = (make_pathscore_helper (head paths) turn n) : make_pathscore (tail paths) turn n 
+
+make_pathscore_helper :: [[String]]->Char->Int->PathScore
+make_pathscore_helper path turn n = (path , get_score (last path) turn n)
+
 crusher_r4j8 ::[String]->Char->Int->Int->[String]
 crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 state team numMove numN)
+
+
 
 
 
@@ -60,7 +93,7 @@ generate_possible_state_helper state pawn n =
 	(if (possible_move state pawn n left) then (slide_pawn state pawn left n):[] else []) ++ 
 	(if (possible_move state pawn n right) then (slide_pawn state pawn right n):[] else []) ++ 
 	(if (possible_move state pawn n bottomleft) then (slide_pawn state pawn bottomleft n):[] else []) ++ 
-	(if (possible_move state pawn n bottomright) then (slide_pawn state pawn topleft n):[] else []) ++ 	
+	(if (possible_move state pawn n bottomright) then (slide_pawn state pawn bottomright n):[] else []) ++ 	
 	(if (possible_jump state pawn n topleft) then (jump_pawn state pawn topleft n):[] else []) ++ 
 	(if (possible_jump state pawn n topright) then (jump_pawn state pawn topright n):[] else []) ++ 
 	(if (possible_jump state pawn n left) then (jump_pawn state pawn left n):[] else []) ++ 
