@@ -3,7 +3,7 @@ testBoard = ["WWW-WW-------BB-BBB"]
 testBoardState =["WWW","-WW-", "-----","-BB-","BBB"]
 
 testBoardState1 =["WWW","--W-", "-w---","-BB-","BBB"]
-
+simpleBoardState = ["WW","---","BB"]
 type Pawn = (Char,Int,Int)
 
 testPawn = ('W',0,0)
@@ -29,6 +29,12 @@ bottomright = 5
 crusher_r4j8 ::[String]->Char->Int->Int->[String]
 crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 state team numMove numN)
 
+
+
+nextturn :: Char->Char
+nextturn input
+	| input == 'W' ='B'
+	| otherwise = 'W'
 
 state_search_r4j8 ::[String] ->Char->Int->Int->[String]
 state_search_r4j8 path team numMove numN  = path
