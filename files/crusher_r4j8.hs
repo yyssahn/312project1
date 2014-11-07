@@ -41,20 +41,27 @@ get_score state pawn n
 	|	otherwise = (get_pawn_count state 'B') - (get_pawn_count state 'W')
 
 
---generate_possible_state :: [String]->Char->[Pawn]->Int->[String]
---generate_possible_state state turn pawns n
---	|	null (head pawns)  = []
---	|	get_pawn_char (head Pawns) /= turn = generate_possible_state state (tail pawns) n
---	|	otherwise = (generate_possible_state_helper state (head pawns) n): generate_possible_state state (tail pawns) n
+generate_possible_state :: [String]->Char->[Pawn]->Int->[[String]]
+generate_possible_state state turn pawns n
+	|	null pawns= []
+	|	get_pawn_char (head pawns) /= turn = generate_possible_state state turn (tail pawns) n
+	|	otherwise = (generate_possible_state_helper state (head pawns) n)++ generate_possible_state state turn (tail pawns) n
 
---generate_possible_state_helper ::[String] ->Pawn->Int->[String]
---	|
---	|
-
-	
-
-
-
+generate_possible_state_helper ::[String] ->Pawn->Int->[[String]]
+generate_possible_state_helper state pawn n =
+	(if (possible_move state pawn n topleft) then (slide_pawn state pawn topleft n):[] else []) ++ 
+	(if (possible_move state pawn n topright) then (slide_pawn state pawn topright n):[] else []) ++ 
+	(if (possible_move state pawn n left) then (slide_pawn state pawn left n):[] else []) ++ 
+	(if (possible_move state pawn n right) then (slide_pawn state pawn right n):[] else []) ++ 
+	(if (possible_move state pawn n bottomleft) then (slide_pawn state pawn bottomleft n):[] else []) ++ 
+	(if (possible_move state pawn n bottomright) then (slide_pawn state pawn topleft n):[] else []) ++ 	
+	(if (possible_jump state pawn n topleft) then (jump_pawn state pawn topleft n):[] else []) ++ 
+	(if (possible_jump state pawn n topright) then (jump_pawn state pawn topright n):[] else []) ++ 
+	(if (possible_jump state pawn n left) then (jump_pawn state pawn left n):[] else []) ++ 
+	(if (possible_jump state pawn n right) then (jump_pawn state pawn right n):[] else []) ++ 
+	(if (possible_jump state pawn n bottomleft) then (jump_pawn state pawn bottomleft n):[] else []) ++ 
+	(if (possible_jump state pawn n bottomright) then (jump_pawn state pawn bottomright n):[] else [])++
+	[]
 
 get_pawn_count::[String]->Char->Int
 get_pawn_count state pawn
@@ -108,6 +115,7 @@ make_board_helper input n helper
 get_Char :: [String]->Int->Int->Char
 get_Char state x y
 	|	null state = ' '
+	|	x < 0 = ' '
 	|	y == 0 && (length (head state)) > x = get_Char_helper (head state) x
 	|	y == 0 && (length (head state)) <= x = ' '
 	|	otherwise = get_Char (tail state) x (y-1)
@@ -137,7 +145,7 @@ empty state x y
 
 possible_jump::[String]->Pawn->Int->Int->Bool
 possible_jump state pawn size dir	
-	|	get_pawn_y pawn < size-2 = possible_jump_up state pawn dir
+	|	get_pawn_y pawn < (size-2) = possible_jump_up state pawn dir
 	|	get_pawn_y pawn ==(size-2) = possible_jump_centerup state pawn dir
 	|	get_pawn_y pawn ==(size-1) = possible_jump_center state pawn dir
 	|	get_pawn_y pawn ==(size) = possible_jump_centerdown state pawn dir
@@ -181,8 +189,8 @@ possible_jump_center state pawn dir
 
 possible_jump_centerdown ::[String]->Pawn->Int->Bool
 possible_jump_centerdown state pawn dir
-	|	dir == topleft  && (get_Char state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -1) (get_pawn_y pawn -2)
-	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn+1) (get_pawn_y pawn - 2)
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn -1) (get_pawn_y pawn -2)
+	|	dir == topright && (get_Char state (get_pawn_x pawn+1) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn+1) (get_pawn_y pawn - 2)
 	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
 	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
 	|	dir == bottomleft && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn+2)
@@ -191,8 +199,8 @@ possible_jump_centerdown state pawn dir
 
 possible_jump_down ::[String]->Pawn->Int->Bool
 possible_jump_down state pawn dir
-	|	dir == topleft  && (get_Char state (get_pawn_x pawn-1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn -2)
-	|	dir == topright && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn+2) (get_pawn_y pawn - 2)
+	|	dir == topleft  && (get_Char state (get_pawn_x pawn) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn -2)
+	|	dir == topright && (get_Char state (get_pawn_x pawn+1) (get_pawn_y pawn -1)) == (get_pawn_char pawn)= can_jump state (get_pawn_char pawn) (get_pawn_x pawn+2) (get_pawn_y pawn - 2)
 	|	dir == left && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn)
 	|	dir == right && (get_Char state (get_pawn_x pawn + 1)(get_pawn_y pawn)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn + 2) (get_pawn_y pawn)
 	|	dir == bottomleft && (get_Char state (get_pawn_x pawn - 1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn+2)
@@ -202,6 +210,7 @@ possible_jump_down state pawn dir
 
 can_jump ::[String]->Char->Int->Int->Bool
 can_jump state pawn x y
+	|	x<0||y<0 =False
 	|	(get_Char state x y) == pawn || (get_Char state x y) == ' ' = False 
 	|	otherwise = True
 --------------------------------------------------------------------------------------------------------------------------------------
