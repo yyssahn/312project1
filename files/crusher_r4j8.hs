@@ -66,8 +66,25 @@ bottomright = 5
 ---
 ---		main crusher methods
 ---
+
+
+--crusher_r4j8 : This function takes in the state of board as [String], next turn as Char, the depth as turnnum, and the size of the board as n
+--				and returns [String] as output
+--
+--Arguement: The original board state as [String], the next turn as Char, the depth of moves to be generated ad Int, and the size of board as Int
+--
+--Returns : The path created by minmax algorithm
+
 crusher_r4j8 ::[String]->Char->Int->Int->[String]
 crusher_r4j8 state turn turnnum n = make_into_stringarray_r4j8 (crusher_r4j8_helper(make_board_r4j8 (head state) n 0) turn turnnum n [])
+
+
+
+--crusher_r4j8_helper : a helper functions that creates return result for crusher_r4j8
+--
+--Arguement : The board generated from original input as [String], next turn as char, depth as Int, size of the board as Int, and [[String]] to use as path
+--
+--Returns : The [[String]] where [String] is a state
 
 crusher_r4j8_helper :: [String]->Char->Int->Int->[[String]]->[[String]]
 crusher_r4j8_helper state turn turnnum n path
@@ -82,6 +99,13 @@ crusher_r4j8_helper state turn turnnum n path
 ---
 ---		Path generating functions
 ---
+
+--
+--generate_path_r4j8 : Creates a path list that can be created with the current board state and the depth given
+--
+--Arguement: The board state, next turn Char, depth Int, size of Board Int, and a path to be returned
+--
+--Returns: The list of path that can be generated with current board with given depth
 generate_path_r4j8 :: [String]->Char->Int->Int->[[[String]]]->[[[String]]]
 generate_path_r4j8 state turn turnnum n path
 	|	turnnum ==0 = path
@@ -89,10 +113,23 @@ generate_path_r4j8 state turn turnnum n path
 	|	otherwise = generate_path_r4j8 state (nextturn turn) (turnnum -1) n (make_patharray_r4j8 path turn n)
 
 
+
+--make_patharray_r4j8 : One of helper functions used to generate paths
+--
+--Arguement: Paths, turn, and n 
+--
+--Returns: adds next possible states to current path
 make_patharray_r4j8:: [[[String]]]->Char->Int->[[[String]]]
 make_patharray_r4j8 paths turn n 
 	|	null paths = []
 	|	otherwise = (make_patharray_r4j8_helper (head paths) (generate_possible_state_r4j8 (last(head paths))  turn (make_PawnList_r4j8 (last (head paths)) 0) n ) n) ++ make_patharray_r4j8 (tail paths) turn n
+
+
+--make_patharray_r4j8_helper : helper function too make_patharray_r4j8
+--
+--Arguement: Single path, list of states that can be created and board size n
+--
+--Returns: returns a list of path
 
 make_patharray_r4j8_helper :: [[String]]->[[String]]->Int->[[[String]]]
 make_patharray_r4j8_helper path states n
@@ -104,11 +141,26 @@ make_patharray_r4j8_helper path states n
 ----------
 ----------		PathScore Generating Functions		
 ----------
+
+
+--
+--make_pathscore_r4j8 : creates a pathscore list from the array of paths
+--
+--Arguement: array of paths, the turn char and size of board n
+--
+--Returns: list of pathscores
 make_pathscore_r4j8 :: [[[String]]]->Char->Int->[PathScore]
 make_pathscore_r4j8 paths turn n 
 	|	null paths = []
 	|	otherwise = (make_pathscore_r4j8_helper (head paths) turn n) : make_pathscore_r4j8 (tail paths) turn n 
 
+
+
+--make_pathscore_r4j8_helper :: helper function to make_pathscore_r4j8
+--
+--Arguement: single path, turn char, and size n
+--
+--Returns: returns a single pathscore generated from score
 make_pathscore_r4j8_helper :: [[String]]->Char->Int->PathScore
 make_pathscore_r4j8_helper path turn n = (path , get_score_r4j8 (last path) turn n)
 
@@ -118,6 +170,14 @@ make_pathscore_r4j8_helper path turn n = (path , get_score_r4j8 (last path) turn
 ---------- 
 ----------		Funtions involving backtracking to find best path
 ----------
+
+
+
+--backtrack_ps : returns a list of pathscore that goes back saves value depending on min/max
+--
+--Arguement: pathscore list
+--
+--Returns: pathscore list
 backtrack_ps_r4j8 ::[PathScore] -> [PathScore]
 backtrack_ps_r4j8 ps
 	|	length(get_ps_path (head ps)) == 1 = ps
@@ -125,16 +185,39 @@ backtrack_ps_r4j8 ps
 	|	odd (length(get_ps_path (head ps))) = backtrack_ps_r4j8 (trim_pathscore_r4j8 (init_pathscore_r4j8 ps) minnum [])
 	|	otherwise = backtrack_ps_r4j8 (trim_pathscore_r4j8 (init_pathscore_r4j8 ps) maxnum []) 
 
+
+--
+--init_pathscore_r4j8 : shortens the pathscore list
+--
+--Arguement: pathscore list
+--
+--Returns: pathscore list
+
 init_pathscore_r4j8 :: [PathScore] ->[PathScore]
 init_pathscore_r4j8 ps
 	|	(length(get_ps_path (head ps))) >= (length(get_ps_path (head (tail ps)))) = init_pathscore_r4j8_helper ps (length(get_ps_path (head ps)))
 	|	otherwise = init_pathscore_r4j8_helper ps (length(get_ps_path (head (tail ps))))
 	
+
+--init_pathscore_r4j8_helper :  returns list of pathscores, it is a helper function to init_pathscore_r4j8
+--
+--Arguement: list of pathscore, and length of the path longest of pathscore
+--
+--Returns:	list of pathscore
+
 init_pathscore_r4j8_helper ::[PathScore]->Int->[PathScore]
 init_pathscore_r4j8_helper ps leng
 	| null ps = [] 
 	|	(length(get_ps_path (head ps))) < leng = (head ps) : init_pathscore_r4j8_helper (tail ps) leng 
 	|	otherwise =(init ( get_ps_path (head ps)),get_ps_score (head ps)): init_pathscore_r4j8_helper (tail ps) leng
+
+
+--trim_pathscore_r4j8:  trims pathscore inited by previous methods, removing duplicates and preserving only the min/max depending on level
+--
+--Arguement: pathscore list minmax int, and track to return
+--
+--Returns: [pathscore]
+
 trim_pathscore_r4j8 ::[PathScore]->Int->[PathScore]->[PathScore]
 trim_pathscore_r4j8 ps minmax track
 	| null ps = track
@@ -142,6 +225,13 @@ trim_pathscore_r4j8 ps minmax track
 	| (get_ps_path(head ps)) /= (get_ps_path (head track)) = trim_pathscore_r4j8 (tail ps) minmax (head ps : track)
 	| otherwise =  trim_pathscore_r4j8 (tail ps) minmax ((trim_pathscore_r4j8_helper (head ps) (head track) minmax) :tail track)
 
+
+
+--
+--
+--Arguement:
+--
+--Returns:
 trim_pathscore_r4j8_helper::PathScore->PathScore->Int->PathScore
 trim_pathscore_r4j8_helper a b minmax
 	|	minmax== maxnum && (get_ps_score a) > (get_ps_score b) = a
@@ -150,26 +240,20 @@ trim_pathscore_r4j8_helper a b minmax
 	|	otherwise  = a
 	
 
+
+
+--nextturn : returns what next turn will be
+--
+--Arguement: Char, specifically 'B' or 'W'
+--
+--Returns: Char, specifically 'B' or 'W'
 nextturn :: Char->Char
 nextturn input
 	| input == 'W' ='B'
 	| otherwise = 'W'
 
 
-------------------------------------------------------------
---------
---------	Board generating functions
---------
 
-state_search_r4j8 ::[String] ->Char->Int->Int->[String]
-state_search_r4j8 path team numMove numN  = path
-
-
-first_n_items_r4j8 ::[Char]->Int->[Char]
-first_n_items_r4j8 [] n = []
-first_n_items_r4j8 (x:xs) 0 = []
-first_n_items_r4j8 (x:xs) n = x : (first_n_items_r4j8 xs (n-1))
- 
 ---------------------------------------------------------------------------------------------------
 --------
 --------	Scoring Functions and game_over functions
@@ -298,6 +382,8 @@ make_PawnList_r4j8_helper str helper y
 ---
 --- used to turn basic form of user input to the board that we can manipulate
 ---
+
+
 make_board_r4j8 :: [Char]->Int->Int->[String]
 make_board_r4j8 input n helper
 	|	null input = []
@@ -310,6 +396,11 @@ make_board_r4j8_helper input n helper
 	|	otherwise =  (first_n_items_r4j8 input (n + helper)): make_board_r4j8_helper (mynthtail_r4j8 (n+helper) input)  n (helper-1)
 
 
+first_n_items_r4j8 ::[Char]->Int->[Char]
+first_n_items_r4j8 [] n = []
+first_n_items_r4j8 (x:xs) 0 = []
+first_n_items_r4j8 (x:xs) n = x : (first_n_items_r4j8 xs (n-1))
+ 
 
 
 
