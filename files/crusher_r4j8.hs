@@ -3,13 +3,15 @@ testBoard = ["WWW-WW-------BB-BBB"]
 testBoardState =["WWW","-WW-", "-----","-BB-","BBB"]
 
 testBoardState1 =["WWW","--W-", "-w---","-BB-","BBB"]
-simpleBoardState = ["WW","---","BB"]
+simpleBoardState = ["W-","-W-","BB"]
+
+
+
+testBoardState2 =["WW-","-WW-", "--W--","-BB-","BBB"]
+
+testBoardState3 =["WW-","-WW-", "--W--","-BBB","---"]
+
 type Pawn = (Char,Int,Int)
-
-testPawn = ('W',0,0)
-testPawnList = [('W',0,0),('W',1,0),('W',2,0),('W',1,1),('W',2,1),('B',1,3),('B',2,3),('B',0,4),('4',1,4),('B',2,4)]
-
-testBoardState2 = ["-W---","--W---","---W---","--------","---------"]
 
 type PathScore= ([[String]],Int)
 
@@ -33,25 +35,37 @@ bottomright = 5
 
 
 
+crusher_r4j8 ::[String]->Char->Int->Int->[String]
+crusher_r4j8 state turn turnnum n = make_into_stringarray(crusher_r4j8_helper(make_board (head state) n 0) turn turnnum n [])
 
+crusher_r4j8_helper :: [String]->Char->Int->Int->[[String]]->[[String]]
+crusher_r4j8_helper state turn turnnum n path
+	|	null path = crusher_r4j8_helper state (nextturn turn) (turnnum-1) n ([state]++      [(get_best_next (backtrack_ps (make_pathscore (generate_path state turn turnnum n []) turn n )   )  [] )]  )
+	|	turnnum == 0 = path
+	|	otherwise = crusher_r4j8_helper (last path) (nextturn turn)(turnnum -1) n (path ++ [(get_best_next (backtrack_ps (make_pathscore (generate_path state turn turnnum n []) turn n )   )  [] )] )
+
+make_into_stringarray :: [[String]]->[String]
+make_into_stringarray [] = []
+make_into_stringarray (x:xs) = (make_into_single_string x) : make_into_stringarray xs
 -------------------------------------------------------------------------------
 generate_path :: [String]->Char->Int->Int->[[[String]]]->[[[String]]]
 generate_path state turn turnnum n path
 	|	turnnum ==0 = path
-	|	(length path)== 0  = generate_path state (nextturn turn) (turnnum-1) n (make_patharray_helper [state] (generate_possible_state state turn (make_PawnList state 0) n))
+	|	(length path)== 0  = generate_path state (nextturn turn) (turnnum-1) n (make_patharray_helper [state] (generate_possible_state state turn (make_PawnList state 0) n) n)
 	|	otherwise = generate_path state (nextturn turn) (turnnum -1) n (make_patharray path turn n)
 
 
 make_patharray:: [[[String]]]->Char->Int->[[[String]]]
 make_patharray paths turn n 
 	|	null paths = []
-	|	otherwise = (make_patharray_helper (head paths) (generate_possible_state (last(head paths))  turn (make_PawnList (last (head paths)) 0) n ) ) ++ make_patharray (tail paths) turn n
+	|	otherwise = (make_patharray_helper (head paths) (generate_possible_state (last(head paths))  turn (make_PawnList (last (head paths)) 0) n ) n) ++ make_patharray (tail paths) turn n
 
-make_patharray_helper :: [[String]]->[[String]]->[[[String]]]
-make_patharray_helper path states
+make_patharray_helper :: [[String]]->[[String]]->Int->[[[String]]]
+make_patharray_helper path states n
 	|	null states = []
-	|	elem (head states) path = make_patharray_helper path (tail states)
-	|	otherwise = (reverse ( (head states):(reverse path))) : make_patharray_helper path (tail states) 
+	|	is_game_over (last path) n = [path]
+	|	elem (head states) path = make_patharray_helper path (tail states) n 
+	|	otherwise = (reverse ( (head states):(reverse path))) : make_patharray_helper path (tail states) n 
 -------------------------------------------------------------------------------
 
 
@@ -63,20 +77,24 @@ make_pathscore paths turn n
 make_pathscore_helper :: [[String]]->Char->Int->PathScore
 make_pathscore_helper path turn n = (path , get_score (last path) turn n)
 
-crusher_r4j8 ::[String]->Char->Int->Int->[String]
-crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 state team numMove numN)
 
 backtrack_ps ::[PathScore] -> [PathScore]
 backtrack_ps ps
 	|	length(get_ps_path (head ps)) == 1 = ps
 	|	length(get_ps_path (head ps)) == 2 = ps
-	|	odd (length(get_ps_path (head ps))) = backtrack_ps (trim_pathscore (init_pathscore ps) maxnum [])
-	|	otherwise = backtrack_ps (trim_pathscore (init_pathscore ps) minnum []) 
+	|	odd (length(get_ps_path (head ps))) = backtrack_ps (trim_pathscore (init_pathscore ps) minnum [])
+	|	otherwise = backtrack_ps (trim_pathscore (init_pathscore ps) maxnum []) 
 
 init_pathscore :: [PathScore] ->[PathScore]
-init_pathscore [] = []
-init_pathscore (p:ps) = (init ( get_ps_path p ),get_ps_score p): init_pathscore (ps)
-
+init_pathscore ps
+	|	(length(get_ps_path (head ps))) >= (length(get_ps_path (head (tail ps)))) = init_pathscore_helper ps (length(get_ps_path (head ps)))
+	|	otherwise = init_pathscore_helper ps (length(get_ps_path (head (tail ps))))
+	
+init_pathscore_helper ::[PathScore]->Int->[PathScore]
+init_pathscore_helper ps leng
+	| null ps = [] 
+	|	(length(get_ps_path (head ps))) < leng = (head ps) : init_pathscore_helper (tail ps) leng 
+	|	otherwise =(init ( get_ps_path (head ps)),get_ps_score (head ps)): init_pathscore_helper (tail ps) leng
 trim_pathscore ::[PathScore]->Int->[PathScore]->[PathScore]
 trim_pathscore ps minmax track
 	| null ps = track
@@ -101,12 +119,43 @@ nextturn input
 state_search_r4j8 ::[String] ->Char->Int->Int->[String]
 state_search_r4j8 path team numMove numN  = path
 
-get_score :: [String]->Char->Int->Int
-get_score state pawn n
+get_score2 :: [String]->Char->Int->Int
+get_score2 state pawn n
 	|	pawn == 'W' && (get_pawn_count state 'B' < n) = 1000
 	|	pawn == 'W' = (get_pawn_count state 'W') - (get_pawn_count state 'B')
 	|	pawn == 'B' && (get_pawn_count state 'W' < n) = 1000
 	|	otherwise = (get_pawn_count state 'B') - (get_pawn_count state 'W')
+
+
+
+
+get_score :: [String]->Char->Int-> Int
+get_score state pawn  n = (length (get_score_helper state pawn (make_PawnList state 0) n) ) + get_score2 state pawn n
+
+
+get_score_helper:: [String]->Char->[Pawn]->Int->[[String]]
+get_score_helper state turn pawns n
+	|	null pawns= []
+	|	get_pawn_char (head pawns) /= turn = get_score_helper state turn (tail pawns) n
+	|	otherwise = (get_score_helper_01 state (head pawns) n)++ get_score_helper state turn (tail pawns) n
+
+get_score_helper_01 ::[String] ->Pawn->Int->[[String]]
+get_score_helper_01 state pawn n =
+	(if (possible_jump state pawn n topleft) then (jump_pawn state pawn topleft n):[] else []) ++ 
+	(if (possible_jump state pawn n topright) then (jump_pawn state pawn topright n):[] else []) ++ 
+	(if (possible_jump state pawn n left) then (jump_pawn state pawn left n):[] else []) ++ 
+	(if (possible_jump state pawn n right) then (jump_pawn state pawn right n):[] else []) ++ 
+	(if (possible_jump state pawn n bottomleft) then (jump_pawn state pawn bottomleft n):[] else []) ++ 
+	(if (possible_jump state pawn n bottomright) then (jump_pawn state pawn bottomright n):[] else [])
+
+
+get_best_next::[PathScore]->[PathScore]->[String]
+get_best_next [] (p:ps) = get_best_next_helper p
+get_best_next (x:xs) [] = get_best_next xs [x]
+get_best_next (x:xs) (p:ps) = if (get_ps_score x) > (get_ps_score p) then get_best_next xs [x] else get_best_next xs [p]
+
+get_best_next_helper::PathScore->[String]
+get_best_next_helper ps = last (get_ps_path ps)
 
 
 generate_possible_state :: [String]->Char->[Pawn]->Int->[[String]]
