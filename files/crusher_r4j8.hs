@@ -66,6 +66,12 @@ make_pathscore_helper path turn n = (path , get_score (last path) turn n)
 crusher_r4j8 ::[String]->Char->Int->Int->[String]
 crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 state team numMove numN)
 
+backtrack_ps ::[PathScore] -> [PathScore]
+backtrack_ps ps
+	|	length(get_ps_path (head ps)) == 1 = ps
+	|	length(get_ps_path (head ps)) == 2 = ps
+	|	odd (length(get_ps_path (head ps))) = backtrack_ps (trim_pathscore (init_pathscore ps) maxnum [])
+	|	otherwise = backtrack_ps (trim_pathscore (init_pathscore ps) minnum []) 
 
 init_pathscore :: [PathScore] ->[PathScore]
 init_pathscore [] = []
