@@ -227,11 +227,11 @@ trim_pathscore_r4j8 ps minmax track
 
 
 
+--trim_pathscore_r4j8_helper : trim_pathscore helper
 --
+--Arguement: pathscore a and pathscore b, and an int indicating min/max 
 --
---Arguement:
---
---Returns:
+--Returns:pathscore that fits the criteria
 trim_pathscore_r4j8_helper::PathScore->PathScore->Int->PathScore
 trim_pathscore_r4j8_helper a b minmax
 	|	minmax== maxnum && (get_ps_score a) > (get_ps_score b) = a
@@ -253,16 +253,25 @@ nextturn input
 	| otherwise = 'W'
 
 
-
 ---------------------------------------------------------------------------------------------------
 --------
 --------	Scoring Functions and game_over functions
 --------
 
 
+--get_score_r4j8 : calculate score from the the state
+--
+--Arguement: state, the turn that is calculating, and size of n
+--
+--Returns: the score as Int , the score is (possible jumps it can make) + 2 *( the number difference between 'my' pawn and enemy's pawn)
 get_score_r4j8 :: [String]->Char->Int-> Int
 get_score_r4j8 state pawn  n = (length (get_score_r4j8_helper state pawn (make_PawnList_r4j8 state 0) n) ) + (2*(get_score_r4j82 state pawn n))
 
+
+
+--get_score_r4j8_helper & helper_01 :  helpers used in get_score
+--
+--Returns : the score based on possible jumps it can make
 
 get_score_r4j8_helper:: [String]->Char->[Pawn]->Int->[[String]]
 get_score_r4j8_helper state turn pawns n
@@ -279,6 +288,11 @@ get_score_r4j8_helper_01 state pawn n =
 	(if (possible_jump_r4j8 state pawn n bottomleft) then (jump_pawn_r4j8 state pawn bottomleft n):[] else []) ++ 
 	(if (possible_jump_r4j8 state pawn n bottomright) then (jump_pawn_r4j8 state pawn bottomright n):[] else [])
 
+--get_score_r4j82 :  returns the difference between two sides, -  if 'we' are losing
+--
+--Arguement:state, turn as Char, and size of board
+--
+--Returns: gives score based on number difference between two players
 get_score_r4j82 :: [String]->Char->Int->Int
 get_score_r4j82 state pawn n
 	|	(pawn == 'W' && (get_pawn_count_r4j8 state 'B' < n))|| (pawn == 'B' && (get_pawn_count_r4j8 state 'W' < n))= 1000
@@ -286,11 +300,25 @@ get_score_r4j82 state pawn n
 	|	otherwise = (get_pawn_count_r4j8 state 'B') - (get_pawn_count_r4j8 state 'W')
 
 
+
+
+--is_game_over_r4j8 : returns true if game is over because the number of pawns are too little
+--
+--Arguement: state, size of board
+--
+--Returns: Boolean
 is_game_over_r4j8 :: [String]->Int->Bool
 is_game_over_r4j8 state n
 	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 = True
 	|	otherwise = False
 
+
+
+--is_game_over_turn_r4j8 : returns true if game is over because you cannot create more states
+--
+--Arguement: state, size of board, and turn and 'char'
+--
+--Returns: Boolean
 
 is_game_over_turn_r4j8 :: [String]->Int->Char->Bool
 is_game_over_turn_r4j8 state n turn
@@ -304,6 +332,12 @@ is_game_over_turn_r4j8 state n turn
 ----------		Selecting Best next node from pathscore funcctions
 ----------
 
+
+--get_best_next_r4j8 :  returns the best next state from list of pathscores
+--
+--Arguement: pathscore that is trimmed
+--
+--Returns: next state to proceed
 get_best_next_r4j8::[PathScore]->[PathScore]->[String]
 get_best_next_r4j8 [] (p:ps) = get_best_next_r4j8_helper p
 get_best_next_r4j8 (x:xs) [] = get_best_next_r4j8 xs [x]
@@ -318,12 +352,18 @@ get_best_next_r4j8_helper ps = last (get_ps_path ps)
 ----------		Generating possible states functions, creating possilbe "branches" of a tree
 ----------
 
+
+--generate_possible_state_r4j8
+--
+--Arguement: current state, turn, list of pawns, and size of board
+--
+--Returns: returns possible states that can be produced
+
 generate_possible_state_r4j8 :: [String]->Char->[Pawn]->Int->[[String]]
 generate_possible_state_r4j8 state turn pawns n
 	|	null pawns= []
 	|	get_pawn_char (head pawns) /= turn = generate_possible_state_r4j8 state turn (tail pawns) n
 	|	otherwise = (generate_possible_state_r4j8_helper state (head pawns) n)++ generate_possible_state_r4j8 state turn (tail pawns) n
-
 
 
 generate_possible_state_r4j8_helper ::[String] ->Pawn->Int->[[String]]
@@ -348,6 +388,12 @@ generate_possible_state_r4j8_helper state pawn n =
 ----------
 
 
+--get_pawn_count_r4j8 : returns the number of pawns left for that team
+--
+--Arguement: state, team name as Char
+--
+--Returns: Int as number of pawns counted
+
 get_pawn_count_r4j8::[String]->Char->Int
 get_pawn_count_r4j8 state pawn
 	|	null state = 0
@@ -360,6 +406,12 @@ get_pawn_count_r4j8_helper state pawn
 	|	otherwise = get_pawn_count_r4j8_helper (tail state) pawn
 
 
+
+--make_PawnList_r4j8 : creates custom type Pawn list from current board state
+--
+--Arguement: current board state, and helper int, 0 when first called
+--
+--Returns: list of Pawns,
 
 make_PawnList_r4j8:: [String]->Int->[Pawn]
 make_PawnList_r4j8 state yhelper
@@ -375,20 +427,42 @@ make_PawnList_r4j8_helper str helper y
 
 
 
-
-
-
 ----------------------------------------------------------------------------------------------------------
 ---
 --- used to turn basic form of user input to the board that we can manipulate
 ---
 
+-- make_board_r4j8
+-- 
+-- This function takes a user's input including current board representation(List of Strings), 
+-- Integer N and heleper Integer 0.
+-- used to turn basic form of user input to the board that we can manipulate
+--
+-- Arguments:
+-- 	-- 1st : the list of Strings
+--	-- 2nd : Integer
+-- 	-- 3rd : Integer
+-- Returns: the list of Strings
 
 make_board_r4j8 :: [Char]->Int->Int->[String]
 make_board_r4j8 input n helper
 	|	null input = []
 	|	helper == n = make_board_r4j8_helper input n (helper -2)
 	|	otherwise = (first_n_items_r4j8 input (n + helper)):make_board_r4j8 (mynthtail_r4j8 (n+helper) input) n (helper+1)
+
+
+
+-- make_board_r4j8_helper
+-- 
+-- This helper function takes a user's input including current board representation(List of Strings) and 
+-- Integer N.
+-- used to turn basic form of user input to the board that we can manipulate
+--
+-- Arguments:
+-- 	-- 1st : the list of Strings
+--	-- 2nd : Integer
+--	-- 3rd : Integer
+-- Returns: the list of Strings
 
 make_board_r4j8_helper ::[Char]->Int->Int->[String]
 make_board_r4j8_helper input n helper
@@ -405,12 +479,27 @@ first_n_items_r4j8 (x:xs) n = x : (first_n_items_r4j8 xs (n-1))
 
 
 -----------------------------------------------------------------------------------------------------------
-----
----- used to convert Path of states into [String] to be printed
-----
+-- make_into_stringarray_r4j8
+--
+-- This function takes a list of divided path(list of list of Strings) and convert it into List of path(string).
+-- In other words, convert Path of states into [String] to be printed
+
+-- Arguments:
+-- -- 1st : the List of List of Strings
+-- Returns: the new List of Strings
+
 make_into_stringarray_r4j8 :: [[String]]->[String]
 make_into_stringarray_r4j8 [] = []
 make_into_stringarray_r4j8 (x:xs) = (make_into_single_string_r4j8 x) : make_into_stringarray_r4j8 xs
+
+
+-- make_into_single_string_r4j8
+--
+-- This helper function takes a list of String and convert it into single string. (merge)
+
+-- Arguments
+-- -- 1st : the List of String
+-- Returns: String
 
 make_into_single_string_r4j8 :: [String] -> String
 make_into_single_string_r4j8 input
@@ -419,9 +508,18 @@ make_into_single_string_r4j8 input
 
 
 ---------------------------------------------------------------------------------------------------------
-------
 ------	Board manipulation helpers
-------
+--
+-- get_char_r4j8 
+--
+-- This function takes current state board and coordiates (x,y) and returns a label of pawn.
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Integer
+-- -- 3rd : Integer
+-- Returns: Character
+
 get_Char_r4j8 :: [String]->Int->Int->Char
 get_Char_r4j8 state x y
 	|	null state = ' '
@@ -430,15 +528,44 @@ get_Char_r4j8 state x y
 	|	y == 0 && (length (head state)) <= x = ' '
 	|	otherwise = get_Char_r4j8 (tail state) x (y-1)
 
+
+-- get_char_r4j8_helper 
+--
+-- This helper function takes list of char(current board) and a x position of pawn and returns the char
+--
+-- Arguments
+-- -- 1st : List of Char
+-- -- 2nd : Integer
+-- Returns: Char
+
 get_Char_r4j8_helper::[Char]->Int->Char
 get_Char_r4j8_helper row x = head (mynthtail_r4j8 x row)
-	
+
+
+-- mynthtail_r4j8 
+-- 
+-- This helper function takes N and character and returns a character
+-- 
+-- Arugments
+-- -- 1st : Integer
+-- -- 2nd : List
+-- Return : List
+
 mynthtail_r4j8:: Int->[a]->[a]
 mynthtail_r4j8 n list1
 	| null list1 = list1
 	| n == 0 = list1
 	| otherwise = mynthtail_r4j8 (n-1) (tail list1)
 
+-- empty_r4j8 
+-- 
+-- This function takes current state(list of string) and x and y coordinate and returns True if it's an empty spot
+-- 	
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Integer
+-- -- 3rd : Integer
+-- Returns : Boolean
 
 empty_r4j8 :: [String]->Int->Int->Bool
 empty_r4j8 state x y
@@ -452,6 +579,17 @@ empty_r4j8 state x y
 --------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------
 
+-- possible_jump_r4j8 
+--
+-- This function takes current state (list of string), selected Pawn, N and expecting direction and returns True if it's possible jump toward the direction
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- -- 4th : Integer
+-- Returns: Boolean
+
 possible_jump_r4j8::[String]->Pawn->Int->Int->Bool
 possible_jump_r4j8 state pawn size dir	
 	|	get_pawn_y pawn < (size-2) = possible_jump_r4j8_up state pawn dir
@@ -461,6 +599,17 @@ possible_jump_r4j8 state pawn size dir
 	|	get_pawn_y pawn >(size) = possible_jump_r4j8_down state pawn dir
 	|	otherwise = False
 --------------------------------------------------------------------------------------------------------------------------------------
+
+-- possible_jump_r4j8_up
+--
+-- This function takes current state (list of string), selected Pawn and expecting direction and returns True if it's possible jump toward the direction
+-- but this function is valid in the upper part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
 
 possible_jump_r4j8_up ::[String]->Pawn->Int->Bool
 possible_jump_r4j8_up state pawn dir
@@ -473,6 +622,17 @@ possible_jump_r4j8_up state pawn dir
 	|	otherwise = False
 
 
+-- possible_jump_r4j8_centerup
+--
+-- This function takes current state (list of string), selected Pawn and expecting direction and returns True if it's possible jump toward the direction
+-- but this function is valid in the upper-middle part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
+
 possible_jump_r4j8_centerup ::[String]->Pawn->Int->Bool
 possible_jump_r4j8_centerup state pawn dir
 	|	dir == topleft  && (get_Char_r4j8 state (get_pawn_x pawn -1) (get_pawn_y pawn -1)) == (get_pawn_char pawn) = can_jump_r4j8 state (get_pawn_char pawn)(get_pawn_x pawn -2) (get_pawn_y pawn -2)
@@ -483,6 +643,17 @@ possible_jump_r4j8_centerup state pawn dir
 	|	dir == bottomright && (get_Char_r4j8 state (get_pawn_x pawn +1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump_r4j8 state (get_pawn_char pawn)(get_pawn_x pawn + 1) (get_pawn_y pawn+2)
 	|	otherwise = False
 
+
+-- possible_jump_r4j8_center
+--
+-- This function takes current state (list of string), selected Pawn and expecting direction and returns True if it's possible jump toward the direction
+-- but this function is only valid in the middle part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
 
 possible_jump_r4j8_center ::[String]->Pawn->Int->Bool
 possible_jump_r4j8_center state pawn dir
@@ -495,6 +666,16 @@ possible_jump_r4j8_center state pawn dir
 	|	otherwise = False
 
 
+-- possible_jump_r4j8_centerdown
+--
+-- This function takes current state (list of string), selected Pawn and expecting direction and returns True if it's possible jump toward the direction
+-- but this function is only valid in the middle-down part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
 
 possible_jump_r4j8_centerdown ::[String]->Pawn->Int->Bool
 possible_jump_r4j8_centerdown state pawn dir
@@ -505,6 +686,18 @@ possible_jump_r4j8_centerdown state pawn dir
 	|	dir == bottomleft && (get_Char_r4j8 state (get_pawn_x pawn - 1)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump_r4j8 state (get_pawn_char pawn)(get_pawn_x pawn - 2) (get_pawn_y pawn+2)
 	|	dir == bottomright && (get_Char_r4j8 state (get_pawn_x pawn)(get_pawn_y pawn+1)) == (get_pawn_char pawn) = can_jump_r4j8 state (get_pawn_char pawn)(get_pawn_x pawn) (get_pawn_y pawn+2)
 	|	otherwise = False
+
+
+-- possible_jump_r4j8_down
+--
+-- This function takes current state (list of string), selected Pawn and expecting direction and returns True if it's possible jump toward the direction
+-- but this function is only valid in the down part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
 
 possible_jump_r4j8_down ::[String]->Pawn->Int->Bool
 possible_jump_r4j8_down state pawn dir
@@ -517,6 +710,17 @@ possible_jump_r4j8_down state pawn dir
 	|	otherwise = False
 
 
+
+-- can_jump_r4j8
+--
+-- This hlper function takes current state (list of string), selected Pawn and x, y coordinates and returns true if it's possible to jump
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Integer
+-- -- 3rd : Integer
+-- Returns: Boolean
+
 can_jump_r4j8 ::[String]->Char->Int->Int->Bool
 can_jump_r4j8 state pawn x y
 	|	x<0||y<0 =False
@@ -526,15 +730,35 @@ can_jump_r4j8 state pawn x y
 --------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------
 
+-- possible_move_r4j8
+--
+-- This function takes current state (list of string), selected Pawn, N and expecting direction and returns True if it's possible move toward the direction
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- -- 4th : Integer
+-- Returns: Boolean
 
-
-
-	
 possible_move_r4j8 ::[String]->Pawn->Int->Int->Bool
 possible_move_r4j8 state pawn size dir
 	|	get_pawn_y pawn < (size-1) = possible_move_r4j8_up state pawn dir
 	|	get_pawn_y pawn == (size-1) = possible_move_r4j8_center state pawn dir
 	|	get_pawn_y pawn >= size = possible_move_r4j8_down state pawn dir
+
+
+
+-- possible_move_r4j8_up
+--
+--  This function takes current state (list of string), selected Pawn, N and expecting direction and returns True if it's possible move toward the direction
+--  but this function is only valid in the upper part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
 
 possible_move_r4j8_up ::[String]->Pawn->Int->Bool
 possible_move_r4j8_up state pawn dir
@@ -546,6 +770,17 @@ possible_move_r4j8_up state pawn dir
 	|	dir == bottomright = empty_r4j8 state (get_pawn_x pawn + 1) (get_pawn_y pawn + 1)
 
 
+-- possible_move_r4j8_center
+--
+--  This function takes current state (list of string), selected Pawn, N and expecting direction and returns True if it's possible move toward the direction
+--  but this function is only valid in the middle part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
+
 possible_move_r4j8_center::[String]->Pawn->Int->Bool
 possible_move_r4j8_center state pawn dir
 	|	dir == topleft  = empty_r4j8 state (get_pawn_x pawn - 1) (get_pawn_y pawn - 1)
@@ -555,6 +790,17 @@ possible_move_r4j8_center state pawn dir
 	|	dir == bottomleft = empty_r4j8 state (get_pawn_x pawn - 1) (get_pawn_y pawn + 1)
 	|	dir == bottomright = empty_r4j8 state (get_pawn_x pawn) (get_pawn_y pawn + 1)
 
+
+-- possible_move_r4j8_down
+--
+--  This function takes current state (list of string), selected Pawn, N and expecting direction and returns True if it's possible move toward the direction
+--  but this function is only valid in the down part of the board.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: Boolean
 
 possible_move_r4j8_down ::[String]->Pawn->Int->Bool
 possible_move_r4j8_down state pawn dir
@@ -570,9 +816,17 @@ possible_move_r4j8_down state pawn dir
 ------
 ----
 -----
+-- jump_pawn_r4j8
+--
+--  This function takes current state (list of string), selected Pawn,expecting direction to move and N then returns new state that reflects the jump movement.
+-- 
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- -- 4th : Integer
+-- Returns: list of string
 
-
---jumping pawn 
 jump_pawn_r4j8 :: [String]->Pawn->Int->Int->[String]
 jump_pawn_r4j8 state pawn dir n
 	| 	get_pawn_y (pawn) < (n - 2 )  = jump_pawn_r4j8_up state pawn dir
@@ -580,6 +834,18 @@ jump_pawn_r4j8 state pawn dir n
 	|	get_pawn_y (pawn) == (n-1) = jump_pawn_r4j8_center state pawn dir
 	|	get_pawn_y (pawn) == n = jump_pawn_r4j8_centerdown state pawn dir
 	|	otherwise = jump_pawn_r4j8_down state pawn dir
+
+
+-- jump_pawn_r4j8_up
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the jump movement.
+-- but his function is only usable for upper part of the board 
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
 
 jump_pawn_r4j8_up :: [String]->Pawn->Int->[String]
 jump_pawn_r4j8_up state pawn dir
@@ -591,6 +857,17 @@ jump_pawn_r4j8_up state pawn dir
 	|	otherwise = move_pawn_r4j8 state pawn (get_pawn_x pawn +2) (get_pawn_y pawn +2)
 
 
+-- jump_pawn_r4j8_centerup
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the jump movement.
+-- but his function is only usable for upper-middle part of the board 
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
+
 jump_pawn_r4j8_centerup :: [String]->Pawn->Int->[String]
 jump_pawn_r4j8_centerup state pawn dir
 	|	dir == topleft = move_pawn_r4j8 state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn - 2)
@@ -600,6 +877,17 @@ jump_pawn_r4j8_centerup state pawn dir
 	|	dir == bottomleft = move_pawn_r4j8 state pawn (get_pawn_x pawn-1) (get_pawn_y pawn + 2)
 	|	otherwise = move_pawn_r4j8 state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +2)
 
+
+-- jump_pawn_r4j8_center
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the jump movement.
+-- but his function is only usable for middle part of the board 
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
 
 jump_pawn_r4j8_center :: [String]->Pawn->Int->[String]
 jump_pawn_r4j8_center state pawn dir
@@ -611,6 +899,17 @@ jump_pawn_r4j8_center state pawn dir
 	|	otherwise = move_pawn_r4j8 state pawn (get_pawn_x pawn) (get_pawn_y pawn +2)
 
 
+-- jump_pawn_r4j8_centerdown
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the jump movement.
+-- but his function is only usable for middle-down part of the board 
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
+
 jump_pawn_r4j8_centerdown :: [String]->Pawn->Int->[String]
 jump_pawn_r4j8_centerdown state pawn dir
 	|	dir == topleft = move_pawn_r4j8 state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn - 2)
@@ -620,6 +919,17 @@ jump_pawn_r4j8_centerdown state pawn dir
 	|	dir == bottomleft = move_pawn_r4j8 state pawn (get_pawn_x pawn - 2) (get_pawn_y pawn + 2)
 	|	otherwise = move_pawn_r4j8 state pawn (get_pawn_x pawn) (get_pawn_y pawn +2)
 
+
+-- jump_pawn_r4j8_up
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the jump movement.
+-- but his function is only usable for down part of the board 
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of String
 
 jump_pawn_r4j8_down :: [String]->Pawn->Int->[String]
 jump_pawn_r4j8_down state pawn dir
@@ -631,13 +941,39 @@ jump_pawn_r4j8_down state pawn dir
 	|	otherwise = move_pawn_r4j8 state pawn (get_pawn_x pawn) (get_pawn_y pawn +2)
 
 
---moving pawn one space
+
+
+
+---- moving pawn one space
+--
+-- slide_pawn_r4j8
+--
+--  This function takes current state (list of string), selected Pawn, expecting direction to move and N then returns new state that reflects the movement.
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- -- 4th : Integer
+-- Returns: list of string
+
 slide_pawn_r4j8 :: [String]->Pawn->Int->Int->[String]
 slide_pawn_r4j8 state pawn dir n 
 	| 	get_pawn_y (pawn) < (n - 1 )  = slide_pawn_r4j8_up state pawn dir
 	|	get_pawn_y (pawn) == (n-1) = slide_pawn_r4j8_center state pawn dir
 	|	otherwise = slide_pawn_r4j8_down state pawn dir
 
+
+-- slide_pawn_r4j8_up
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the movement.
+-- but this function is only valid for upper part of the board
+-- Arguments
+--
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
 
 slide_pawn_r4j8_up:: [String]->Pawn->Int->[String]
 slide_pawn_r4j8_up state pawn dir 
@@ -649,6 +985,16 @@ slide_pawn_r4j8_up state pawn dir
 	|	otherwise = move_pawn_r4j8 state pawn (get_pawn_x pawn +1) (get_pawn_y pawn +1)
 
 
+-- slide_pawn_r4j8_center
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the movement.
+-- but this function is only valid for middle part of the board
+-- Arguments
+--
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
 
 slide_pawn_r4j8_center:: [String]->Pawn->Int->[String]
 slide_pawn_r4j8_center  state pawn dir
@@ -660,6 +1006,17 @@ slide_pawn_r4j8_center  state pawn dir
 	|	dir == bottomright = move_pawn_r4j8 state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
 
 
+-- slide_pawn_r4j8_down
+--
+--  This function takes current state (list of string), selected Pawn, and expecting direction to move then returns new state that reflects the movement.
+-- but this function is only valid for down part of the board
+-- Arguments
+--
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- Returns: list of string
+
 slide_pawn_r4j8_down:: [String]->Pawn->Int->[String]
 slide_pawn_r4j8_down state pawn dir
 	|	dir == topleft  = move_pawn_r4j8 state pawn (get_pawn_x pawn) (get_pawn_y pawn - 1)
@@ -669,13 +1026,48 @@ slide_pawn_r4j8_down state pawn dir
 	|	dir == bottomleft = move_pawn_r4j8 state pawn (get_pawn_x pawn - 1) (get_pawn_y pawn + 1)
 	|	dir == bottomright = move_pawn_r4j8 state pawn (get_pawn_x pawn) (get_pawn_y pawn + 1)
 
+
+
+
+-- move_pawn_r4j8
+--
+--  This function takes current state (list of string), selected Pawn, and corresponding x, y coordinates then returns new state that reflects the movement.
+-- This function actually implements the movement.
+--
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Pawn
+-- -- 3rd : Integer
+-- -- 4th : Integer
+-- Returns: New list of string
+
 move_pawn_r4j8 :: [String]->Pawn->Int->Int->[String]
 move_pawn_r4j8 state pawn x y = move_pos_r4j8 (empty_r4j8_pos state (get_pawn_x pawn) (get_pawn_y pawn)) (get_pawn_char pawn) x y
 	
+
+
+-- empty_r4j8_pos 
+-- 
+-- This function takes current state (list of string) and the position x, y then the given position will be changed to empty spot. This reflected new state will be the output
+--	
+-- Arguments
+-- -- 1st : List of String
+-- -- 2nd : Integer
+-- -- 3rd : Integer
+-- Returns: New list of String
+
 empty_r4j8_pos :: [String]->Int->Int->[String]
 empty_r4j8_pos [] x y = []
 empty_r4j8_pos (x:xs) xpos 0 = (empty_r4j8_pos_helper x xpos): xs
 empty_r4j8_pos (x:xs) xpos ypos = x:empty_r4j8_pos xs xpos (ypos-1)
+
+
+-- empty_r4j8_pos _helper
+-- This helper function takesa list of char and the position then returns the applied list of char
+-- Arguments
+-- -- 1st : List of Char
+-- -- 2nd : Integer
+-- Returns: New List of Char
 
 empty_r4j8_pos_helper :: [Char]->Int->[Char]
 empty_r4j8_pos_helper [] x = []
@@ -683,11 +1075,33 @@ empty_r4j8_pos_helper (a:as) 0 = '-':as
 empty_r4j8_pos_helper (a:as) x = a : empty_r4j8_pos_helper as (x-1)
 
 
+-- move_pos_r4j8 
+-- This function takes current state (list of String), current pawn's character and position of x and y then returns the new state(list of string) that reflects the movement.
+-- This is a actual implementation of movement.
+--
+-- Arguments: 
+-- -- 1st : List of String
+-- -- 2nd : Char
+-- -- 3rd : Integer
+-- -- 4th : Integer
+-- Returns : New List of String
 
 move_pos_r4j8::[String]->Char->Int->Int->[String]
 move_pos_r4j8 [] pawn x y = []
 move_pos_r4j8 (a:as) pawn x 0 = (move_pos_r4j8_helper a pawn x): as
 move_pos_r4j8 (a:as) pawn x y = a : move_pos_r4j8 as pawn x (y-1)
+
+
+
+-- move_pos_r4j8_helper 
+-- This helper function takes current state (list of String), current pawn's character and position of x then returns the new state(list of string) that reflects the movement.
+-- This is a actual implementation of movement.
+--
+-- Arguments: 
+-- -- 1st : List of String
+-- -- 2nd : Char
+-- -- 3rd : Integer
+-- Returns : New List of String
 
 move_pos_r4j8_helper::[Char]->Char->Int->[Char]
 move_pos_r4j8_helper [] pawn x = []
