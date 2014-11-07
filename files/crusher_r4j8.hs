@@ -75,12 +75,17 @@ trim_pathscore ::[PathScore]->Int->[PathScore]->[PathScore]
 trim_pathscore ps minmax track
 	| null ps = track
 	| null track = trim_pathscore (tail ps) minmax [(head ps)]
-	| (head ps) /= (head track) = trim_pathscore (tail ps) minmax (head ps : track)
-	| minmax == minnum = trim_pathscore (tail ps) minmax  ((trim_pathscore_helper (head track) (head ps)) : tail track)
-	| otherwise =  trim_pathscore (tail ps) minmax ((trim_pathscore_helper (head ps) (head track)) :tail track)
+	| (get_ps_path(head ps)) /= (get_ps_path (head track)) = trim_pathscore (tail ps) minmax (head ps : track)
+	| otherwise =  trim_pathscore (tail ps) minmax ((trim_pathscore_helper (head ps) (head track) minmax) :tail track)
 
-trim_pathscore_helper::PathScore->PathScore->PathScore
-trim_pathscore_helper a b = if (get_ps_score a) >= (get_ps_score b)  then a else b
+trim_pathscore_helper::PathScore->PathScore->Int->PathScore
+trim_pathscore_helper a b minmax
+	|	minmax== maxnum && (get_ps_score a) > (get_ps_score b) = a
+	|	minmax==maxnum && (get_ps_score a) <= (get_ps_score b) = b
+ 	|	minmax== minnum && (get_ps_score a) > (get_ps_score b) = b
+	|	otherwise  = a
+	
+
 
 nextturn :: Char->Char
 nextturn input
