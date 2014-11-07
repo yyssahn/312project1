@@ -1,18 +1,21 @@
 
+
+--
+-- Sample Boards generated for testing purpose
+--
+
 testBoard = ["WWW-WW-------BB-BBB"]
 testBoardState =["WWW","-WW-", "-----","-BB-","BBB"]
-
 testBoardState1 =["WWW","--W-", "-w---","-BB-","BBB"]
 simpleBoardState = ["W-","-W-","BB"]
-
-
-
 testBoardState2 =["WW-","-WW-", "--W--","-BB-","BBB"]
+testBoardState3 =["WW--WW---W---BBB---"]
 
-testBoardState3 =["WW-","-WW-", "--W--","-BBB","---"]
+--
+-- Custom
+--
 
 type Pawn = (Char,Int,Int)
-
 type PathScore= ([[String]],Int)
 
 minnum::Int
@@ -40,9 +43,10 @@ crusher_r4j8 state turn turnnum n = make_into_stringarray(crusher_r4j8_helper(ma
 
 crusher_r4j8_helper :: [String]->Char->Int->Int->[[String]]->[[String]]
 crusher_r4j8_helper state turn turnnum n path
-	|	null path = crusher_r4j8_helper state (nextturn turn) (turnnum-1) n ([state]++      [(get_best_next (backtrack_ps (make_pathscore (generate_path state turn turnnum n []) turn n )   )  [] )]  )
+	|	null path = crusher_r4j8_helper (get_best_next (backtrack_ps (make_pathscore (generate_path state turn turnnum n []) turn n )   )  [] ) (nextturn turn) (turnnum-1) n ([state]++      [(get_best_next (backtrack_ps (make_pathscore (generate_path state turn turnnum n []) turn n )   )  [] )]  )
 	|	turnnum == 0 = path
-	|	otherwise = crusher_r4j8_helper (last path) (nextturn turn)(turnnum -1) n (path ++ [(get_best_next (backtrack_ps (make_pathscore (generate_path state turn turnnum n []) turn n )   )  [] )] )
+	|	is_game_over (last path) n = path
+	|	otherwise = crusher_r4j8_helper (last path) (nextturn turn)(turnnum -1) n (path ++ [(get_best_next (backtrack_ps (make_pathscore (generate_path (last path) turn turnnum n []) turn n )   )  [] )] )
 
 make_into_stringarray :: [[String]]->[String]
 make_into_stringarray [] = []
