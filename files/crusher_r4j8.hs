@@ -10,6 +10,8 @@ testBoardState1 =["WWW","--W-", "-w---","-BB-","BBB"]
 simpleBoardState = ["W-","-W-","BB"]
 testBoardState2 =["WW-","-WW-", "--W--","-BB-","BBB"]
 testBoardState3 =["WW--WW---W---BBB---"]
+testBoard2=["W-----------WWWWBBB"]
+
 
 --
 -- Custom Type declarations, Pawn represents single piece in a game and PathScore is used to evaluate Path based on scoring function
@@ -68,9 +70,10 @@ crusher_r4j8 state turn turnnum n = make_into_stringarray_r4j8 (crusher_r4j8_hel
 
 crusher_r4j8_helper :: [String]->Char->Int->Int->[[String]]->[[String]]
 crusher_r4j8_helper state turn turnnum n path
+	|	is_game_over_turn_r4j8 state n turn = [state] 
 	|	null path = crusher_r4j8_helper (get_best_next_r4j8 (backtrack_ps_r4j8 (make_pathscore_r4j8 (generate_path_r4j8 state turn turnnum n []) turn n )   )  [] ) (nextturn turn) (turnnum-1) n ([state]++      [(get_best_next_r4j8 (backtrack_ps_r4j8 (make_pathscore_r4j8 (generate_path_r4j8 state turn turnnum n []) turn n )   )  [] )]  )
 	|	turnnum == 0 = path
-	|	is_game_over_r4j8 (last path) n = path
+	|	is_game_over_r4j8 (last path) n  = path
 	|	otherwise = crusher_r4j8_helper (last path) (nextturn turn)(turnnum -1) n (path ++ [(get_best_next_r4j8 (backtrack_ps_r4j8 (make_pathscore_r4j8 (generate_path_r4j8 (last path) turn turnnum n []) turn n )   )  [] )] )
 
 
@@ -148,16 +151,15 @@ state_search_r4j8 path team numMove numN  = path
 
 get_score_r4j82 :: [String]->Char->Int->Int
 get_score_r4j82 state pawn n
-	|	pawn == 'W' && (get_pawn_count_r4j8 state 'B' < n) = 1000
+	|	(pawn == 'W' && (get_pawn_count_r4j8 state 'B' < n))|| (pawn == 'B' && (get_pawn_count_r4j8 state 'W' < n))= 1000
 	|	pawn == 'W' = (get_pawn_count_r4j8 state 'W') - (get_pawn_count_r4j8 state 'B')
-	|	pawn == 'B' && (get_pawn_count_r4j8 state 'W' < n) = 1000
 	|	otherwise = (get_pawn_count_r4j8 state 'B') - (get_pawn_count_r4j8 state 'W')
 
 
 
 
 get_score_r4j8 :: [String]->Char->Int-> Int
-get_score_r4j8 state pawn  n = (length (get_score_r4j8_helper state pawn (make_PawnList_r4j8 state 0) n) ) + get_score_r4j82 state pawn n
+get_score_r4j8 state pawn  n = (length (get_score_r4j8_helper state pawn (make_PawnList_r4j8 state 0) n) ) + (2*(get_score_r4j82 state pawn n))
 
 
 get_score_r4j8_helper:: [String]->Char->[Pawn]->Int->[[String]]
@@ -226,6 +228,14 @@ is_game_over_r4j8 :: [String]->Int->Bool
 is_game_over_r4j8 state n
 	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 = True
 	|	otherwise = False
+
+
+is_game_over_turn_r4j8 :: [String]->Int->Char->Bool
+is_game_over_turn_r4j8 state n turn
+	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 ||(length(generate_possible_state_r4j8 state turn (make_PawnList_r4j8 state 0) n)) == 0
+		= True
+	|	otherwise = False
+
 
 
 first_n_items_r4j8 ::[Char]->Int->[Char]
