@@ -13,6 +13,11 @@ testBoardState2 = ["-W---","--W---","---W---","--------","---------"]
 
 type PathScore= ([[String]],Int)
 
+minnum::Int
+minnum = 0
+maxnum::Int
+maxnum = 1
+
 topleft::Int
 topleft = 0
 topright::Int
@@ -45,6 +50,7 @@ make_patharray paths turn n
 make_patharray_helper :: [[String]]->[[String]]->[[[String]]]
 make_patharray_helper path states
 	|	null states = []
+	|	elem (head states) path = make_patharray_helper path (tail states)
 	|	otherwise = (reverse ( (head states):(reverse path))) : make_patharray_helper path (tail states) 
 -------------------------------------------------------------------------------
 
@@ -61,8 +67,20 @@ crusher_r4j8 ::[String]->Char->Int->Int->[String]
 crusher_r4j8 state team numMove numN = reverse(state_search_r4j8 state team numMove numN)
 
 
+init_pathscore :: [PathScore] ->[PathScore]
+init_pathscore [] = []
+init_pathscore (p:ps) = (init ( get_ps_path p ),get_ps_score p): init_pathscore (ps)
 
+trim_pathscore ::[PathScore]->Int->[PathScore]->[PathScore]
+trim_pathscore ps minmax track
+	| null ps = track
+	| null track = trim_pathscore (tail ps) minmax [(head ps)]
+	| (head ps) /= (head track) = trim_pathscore (tail ps) minmax (head ps : track)
+	| minmax == minnum = trim_pathscore (tail ps) minmax  ((trim_pathscore_helper (head track) (head ps)) : tail track)
+	| otherwise =  trim_pathscore (tail ps) minmax ((trim_pathscore_helper (head ps) (head track)) :tail track)
 
+trim_pathscore_helper::PathScore->PathScore->PathScore
+trim_pathscore_helper a b = if (get_ps_score a) >= (get_ps_score b)  then a else b
 
 nextturn :: Char->Char
 nextturn input
@@ -99,8 +117,7 @@ generate_possible_state_helper state pawn n =
 	(if (possible_jump state pawn n left) then (jump_pawn state pawn left n):[] else []) ++ 
 	(if (possible_jump state pawn n right) then (jump_pawn state pawn right n):[] else []) ++ 
 	(if (possible_jump state pawn n bottomleft) then (jump_pawn state pawn bottomleft n):[] else []) ++ 
-	(if (possible_jump state pawn n bottomright) then (jump_pawn state pawn bottomright n):[] else [])++
-	[]
+	(if (possible_jump state pawn n bottomright) then (jump_pawn state pawn bottomright n):[] else [])
 
 get_pawn_count::[String]->Char->Int
 get_pawn_count state pawn
@@ -434,3 +451,11 @@ get_pawn_x :: Pawn->Int
 get_pawn_x (a,b,c)= b
 get_pawn_y :: Pawn->Int
 get_pawn_y (a,b,c) = c
+
+--
+-- Pawn getters
+--
+get_ps_path :: PathScore->[[String]]
+get_ps_path (a,b)= a
+get_ps_score :: PathScore->Int
+get_ps_score (a,b)= b
