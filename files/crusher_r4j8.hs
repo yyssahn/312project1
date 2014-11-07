@@ -62,9 +62,10 @@ bottomright::Int
 bottomright = 5
 
 
---
---
---
+------------------------------------------------------------------------------
+---
+---		main crusher methods
+---
 crusher_r4j8 ::[String]->Char->Int->Int->[String]
 crusher_r4j8 state turn turnnum n = make_into_stringarray_r4j8 (crusher_r4j8_helper(make_board_r4j8 (head state) n 0) turn turnnum n [])
 
@@ -77,12 +78,16 @@ crusher_r4j8_helper state turn turnnum n path
 	|	otherwise = crusher_r4j8_helper (last path) (nextturn turn)(turnnum -1) n (path ++ [(get_best_next_r4j8 (backtrack_ps_r4j8 (make_pathscore_r4j8 (generate_path_r4j8 (last path) turn turnnum n []) turn n )   )  [] )] )
 
 
--------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+---
+---		Path generating functions
+---
 generate_path_r4j8 :: [String]->Char->Int->Int->[[[String]]]->[[[String]]]
 generate_path_r4j8 state turn turnnum n path
 	|	turnnum ==0 = path
 	|	(length path)== 0  = generate_path_r4j8 state (nextturn turn) (turnnum-1) n (make_patharray_r4j8_helper [state] (generate_possible_state_r4j8 state turn (make_PawnList_r4j8 state 0) n) n)
 	|	otherwise = generate_path_r4j8 state (nextturn turn) (turnnum -1) n (make_patharray_r4j8 path turn n)
+
 
 make_patharray_r4j8:: [[[String]]]->Char->Int->[[[String]]]
 make_patharray_r4j8 paths turn n 
@@ -95,9 +100,10 @@ make_patharray_r4j8_helper path states n
 	|	is_game_over_r4j8 (last path) n = [path]
 	|	elem (head states) path = make_patharray_r4j8_helper path (tail states) n 
 	|	otherwise = (reverse ( (head states):(reverse path))) : make_patharray_r4j8_helper path (tail states) n 
--------------------------------------------------------------------------------
-
-
+-----------------------------------------------------------------------------------------
+----------
+----------		PathScore Generating Functions		
+----------
 make_pathscore_r4j8 :: [[[String]]]->Char->Int->[PathScore]
 make_pathscore_r4j8 paths turn n 
 	|	null paths = []
@@ -107,6 +113,11 @@ make_pathscore_r4j8_helper :: [[String]]->Char->Int->PathScore
 make_pathscore_r4j8_helper path turn n = (path , get_score_r4j8 (last path) turn n)
 
 
+
+------------------------------------------------------------
+---------- 
+----------		Funtions involving backtracking to find best path
+----------
 backtrack_ps_r4j8 ::[PathScore] -> [PathScore]
 backtrack_ps_r4j8 ps
 	|	length(get_ps_path (head ps)) == 1 = ps
@@ -139,23 +150,30 @@ trim_pathscore_r4j8_helper a b minmax
 	|	otherwise  = a
 	
 
-
 nextturn :: Char->Char
 nextturn input
 	| input == 'W' ='B'
 	| otherwise = 'W'
 
 
+------------------------------------------------------------
+--------
+--------	Board generating functions
+--------
+
 state_search_r4j8 ::[String] ->Char->Int->Int->[String]
 state_search_r4j8 path team numMove numN  = path
 
-get_score_r4j82 :: [String]->Char->Int->Int
-get_score_r4j82 state pawn n
-	|	(pawn == 'W' && (get_pawn_count_r4j8 state 'B' < n))|| (pawn == 'B' && (get_pawn_count_r4j8 state 'W' < n))= 1000
-	|	pawn == 'W' = (get_pawn_count_r4j8 state 'W') - (get_pawn_count_r4j8 state 'B')
-	|	otherwise = (get_pawn_count_r4j8 state 'B') - (get_pawn_count_r4j8 state 'W')
 
-
+first_n_items_r4j8 ::[Char]->Int->[Char]
+first_n_items_r4j8 [] n = []
+first_n_items_r4j8 (x:xs) 0 = []
+first_n_items_r4j8 (x:xs) n = x : (first_n_items_r4j8 xs (n-1))
+ 
+---------------------------------------------------------------------------------------------------
+--------
+--------	Scoring Functions and game_over functions
+--------
 
 
 get_score_r4j8 :: [String]->Char->Int-> Int
@@ -177,6 +195,30 @@ get_score_r4j8_helper_01 state pawn n =
 	(if (possible_jump_r4j8 state pawn n bottomleft) then (jump_pawn_r4j8 state pawn bottomleft n):[] else []) ++ 
 	(if (possible_jump_r4j8 state pawn n bottomright) then (jump_pawn_r4j8 state pawn bottomright n):[] else [])
 
+get_score_r4j82 :: [String]->Char->Int->Int
+get_score_r4j82 state pawn n
+	|	(pawn == 'W' && (get_pawn_count_r4j8 state 'B' < n))|| (pawn == 'B' && (get_pawn_count_r4j8 state 'W' < n))= 1000
+	|	pawn == 'W' = (get_pawn_count_r4j8 state 'W') - (get_pawn_count_r4j8 state 'B')
+	|	otherwise = (get_pawn_count_r4j8 state 'B') - (get_pawn_count_r4j8 state 'W')
+
+
+is_game_over_r4j8 :: [String]->Int->Bool
+is_game_over_r4j8 state n
+	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 = True
+	|	otherwise = False
+
+
+is_game_over_turn_r4j8 :: [String]->Int->Char->Bool
+is_game_over_turn_r4j8 state n turn
+	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 ||(length(generate_possible_state_r4j8 state turn (make_PawnList_r4j8 state 0) n)) == 0
+		= True
+	|	otherwise = False
+
+
+----------------------------------------------------------------------
+----------
+----------		Selecting Best next node from pathscore funcctions
+----------
 
 get_best_next_r4j8::[PathScore]->[PathScore]->[String]
 get_best_next_r4j8 [] (p:ps) = get_best_next_r4j8_helper p
@@ -186,6 +228,11 @@ get_best_next_r4j8 (x:xs) (p:ps) = if (get_ps_score x) > (get_ps_score p) then g
 get_best_next_r4j8_helper::PathScore->[String]
 get_best_next_r4j8_helper ps = last (get_ps_path ps)
 
+
+----------------------------------------------------------------------
+----------
+----------		Generating possible states functions, creating possilbe "branches" of a tree
+----------
 
 generate_possible_state_r4j8 :: [String]->Char->[Pawn]->Int->[[String]]
 generate_possible_state_r4j8 state turn pawns n
@@ -211,6 +258,11 @@ generate_possible_state_r4j8_helper state pawn n =
 	(if (possible_jump_r4j8 state pawn n bottomright) then (jump_pawn_r4j8 state pawn bottomright n):[] else [])
 
 
+------------------------------------------------------------------------------------------
+----------
+----------		Pawn generating and counting functions
+----------
+
 
 get_pawn_count_r4j8::[String]->Char->Int
 get_pawn_count_r4j8 state pawn
@@ -224,25 +276,24 @@ get_pawn_count_r4j8_helper state pawn
 	|	otherwise = get_pawn_count_r4j8_helper (tail state) pawn
 
 
-is_game_over_r4j8 :: [String]->Int->Bool
-is_game_over_r4j8 state n
-	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 = True
-	|	otherwise = False
+
+make_PawnList_r4j8:: [String]->Int->[Pawn]
+make_PawnList_r4j8 state yhelper
+	| null state = []
+	| otherwise = (make_PawnList_r4j8_helper (head state) 0 yhelper) ++ (make_PawnList_r4j8 (tail state) (yhelper +1))
 
 
-is_game_over_turn_r4j8 :: [String]->Int->Char->Bool
-is_game_over_turn_r4j8 state n turn
-	|	get_pawn_count_r4j8 state 'W' < n || get_pawn_count_r4j8 state 'B' < 3 ||(length(generate_possible_state_r4j8 state turn (make_PawnList_r4j8 state 0) n)) == 0
-		= True
-	|	otherwise = False
+make_PawnList_r4j8_helper :: [Char]->Int->Int->[Pawn]
+make_PawnList_r4j8_helper str helper y
+	|	null str = []
+	|	head str /= '-'  = ((head str),helper,y) : make_PawnList_r4j8_helper (tail str) (helper+1) y  	
+	| 	otherwise = make_PawnList_r4j8_helper (tail str) (helper + 1) y
 
 
 
-first_n_items_r4j8 ::[Char]->Int->[Char]
-first_n_items_r4j8 [] n = []
-first_n_items_r4j8 (x:xs) 0 = []
-first_n_items_r4j8 (x:xs) n = x : (first_n_items_r4j8 xs (n-1))
- 
+
+
+
 ----------------------------------------------------------------------------------------------------------
 ---
 --- used to turn basic form of user input to the board that we can manipulate
@@ -252,6 +303,11 @@ make_board_r4j8 input n helper
 	|	null input = []
 	|	helper == n = make_board_r4j8_helper input n (helper -2)
 	|	otherwise = (first_n_items_r4j8 input (n + helper)):make_board_r4j8 (mynthtail_r4j8 (n+helper) input) n (helper+1)
+
+make_board_r4j8_helper ::[Char]->Int->Int->[String]
+make_board_r4j8_helper input n helper
+	|	helper == 0 = (first_n_items_r4j8 input n ):[]
+	|	otherwise =  (first_n_items_r4j8 input (n + helper)): make_board_r4j8_helper (mynthtail_r4j8 (n+helper) input)  n (helper-1)
 
 
 
@@ -271,25 +327,10 @@ make_into_single_string_r4j8 input
 	| 	otherwise = (head input) ++ (make_into_single_string_r4j8 (tail input))
 
 
-
-
-make_PawnList_r4j8:: [String]->Int->[Pawn]
-make_PawnList_r4j8 state yhelper
-	| null state = []
-	| otherwise = (make_PawnList_r4j8_helper (head state) 0 yhelper) ++ (make_PawnList_r4j8 (tail state) (yhelper +1))
-
-
-make_PawnList_r4j8_helper :: [Char]->Int->Int->[Pawn]
-make_PawnList_r4j8_helper str helper y
-	|	null str = []
-	|	head str /= '-'  = ((head str),helper,y) : make_PawnList_r4j8_helper (tail str) (helper+1) y  	
-	| 	otherwise = make_PawnList_r4j8_helper (tail str) (helper + 1) y
-
-make_board_r4j8_helper ::[Char]->Int->Int->[String]
-make_board_r4j8_helper input n helper
-	|	helper == 0 = (first_n_items_r4j8 input n ):[]
-	|	otherwise =  (first_n_items_r4j8 input (n + helper)): make_board_r4j8_helper (mynthtail_r4j8 (n+helper) input)  n (helper-1)
-
+---------------------------------------------------------------------------------------------------------
+------
+------	Board manipulation helpers
+------
 get_Char_r4j8 :: [String]->Int->Int->Char
 get_Char_r4j8 state x y
 	|	null state = ' '
@@ -299,7 +340,6 @@ get_Char_r4j8 state x y
 	|	otherwise = get_Char_r4j8 (tail state) x (y-1)
 
 get_Char_r4j8_helper::[Char]->Int->Char
-
 get_Char_r4j8_helper row x = head (mynthtail_r4j8 x row)
 	
 mynthtail_r4j8:: Int->[a]->[a]
