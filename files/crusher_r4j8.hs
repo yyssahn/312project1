@@ -1,3 +1,27 @@
+----------------------------------------------------------------------------------------------------------
+-----
+-----		crusher Project
+-----
+-----
+-----
+----- Authors		Name 	 		Student Number 		CS ID
+-----				Yoonsung Ahn	29838091			r4j8
+-----				Ki Bum Kim		64650088			c4i7
+-----
+-----
+-----
+-----	3 main operations 
+-----	move_generation -> starting from line 374, generate_possible_state(386) checks if possible (starting from line 602), and actual move starting from line (840)
+-----
+-----	Board Evaluation -> starting from line 280, get_score(291) function is used
+-----
+-----	MinMax -> From line 193, starting from backtrack_ps(205), using init_pathscore(220) and trim_pathscore(245).
+-----
+-----	
+
+
+
+
 
 
 --
